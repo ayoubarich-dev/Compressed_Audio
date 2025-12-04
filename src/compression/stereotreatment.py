@@ -1,8 +1,22 @@
+"""
+Module de traitement des signaux stéréo
+Optimise la compression en détectant les canaux similaires
+"""
+
 import numpy as np
 
 
 def channelsDistance(left, right):
-    """Calcule les métriques de distance entre deux canaux audio."""
+    """
+    Calcule les métriques de distance entre deux canaux audio.
+    
+    Args:
+        left: Canal gauche
+        right: Canal droit
+        
+    Returns:
+        dict: Métriques de similarité entre les canaux
+    """
     abs_diff = np.abs(left - right)
     mae = np.mean(abs_diff)
     correlation = np.corrcoef(left, right)[0, 1]
@@ -24,8 +38,17 @@ def channelsDistance(left, right):
 def process_stereo_sound(stereo_array):
     """
     Traite un signal stéréo en analysant la distance entre canaux.
-    Si les canaux sont similaires, recommande mono.
-    Sinon, encode left et (left-right).
+    
+    Si les canaux sont similaires (energy_ratio < 0.2):
+        - Mode mono: garde un seul canal
+    Sinon:
+        - Mode stéréo: encode left et (left-right)
+    
+    Args:
+        stereo_array: Array stéréo entrelacé [L,R,L,R,...]
+        
+    Returns:
+        tuple: (metadata, processed_array)
     """
     left = stereo_array[0::2]
     right = stereo_array[1::2]
@@ -46,6 +69,13 @@ def process_stereo_sound(stereo_array):
 def Back_to_real_stereo(array, mode):
     """
     Reconstruit le signal stéréo à partir du format compressé.
+    
+    Args:
+        array: Signal traité
+        mode: 'm' (mono) ou 's' (stéréo)
+        
+    Returns:
+        np.ndarray: Signal stéréo reconstruit [L,R,L,R,...]
     """
     if mode == 'm':
         # Mode mono -> duplique le canal
@@ -61,4 +91,3 @@ def Back_to_real_stereo(array, mode):
         new_arr[0::2] = left
         new_arr[1::2] = right
     return new_arr
-
