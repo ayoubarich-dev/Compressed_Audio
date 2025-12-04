@@ -11,6 +11,7 @@ from PySide6.QtCore import QUrl, QObject, Signal
 from core.compressor import AudioCompressor
 from core.audio_processor import AudioProcessor
 from compression.utils import taux_reduction
+from pydub import AudioSegment
 
 
 class AudioController(QObject):
@@ -24,10 +25,17 @@ class AudioController(QObject):
     compression_error = Signal(str)  # Message d'erreur
     decompression_finished = Signal(str)  # Chemin du fichier décompressé
     
+    # Nouveaux signaux pour la visualisation
+    original_audio_loaded = Signal(object)  # AudioSegment original
+    compressed_audio_loaded = Signal(object)  # AudioSegment compressé
+    metrics_updated = Signal(dict, dict, float)  # (original_info, compressed_info, reduction_rate)
+    
     def __init__(self):
         super().__init__()
         self.original_audio_path = None
         self.compressed_audio_path = None
+        self.original_audio_segment = None
+        self.compressed_audio_segment = None
         
         # Lecteur audio
         self.player = QMediaPlayer()
@@ -54,6 +62,14 @@ class AudioController(QObject):
         if file_path:
             self.original_audio_path = file_path
             self.file_selected.emit(Path(file_path).name)
+            
+            # Charger l'audio pour la visualisation
+            try:
+                self.original_audio_segment = AudioSegment.from_file(file_path)
+                self.original_audio_loaded.emit(self.original_audio_segment)
+            except Exception as e:
+                self.compression_error.emit(f"Erreur de chargement: {str(e)}")
+            
             return True
         return False
     
@@ -95,6 +111,25 @@ class AudioController(QObject):
             # Calcul du taux
             taux = taux_reduction(self.original_audio_path, save_path)
             self.compression_finished.emit(taux)
+            
+            # Décompression pour la visualisation
+            try:
+                self.compressed_audio_segment = AudioCompressor.decompress(save_path)
+                self.compressed_audio_loaded.emit(self.compressed_audio_segment)
+                
+                # Mise à jour des métriques
+                original_info = AudioProcessor.get_file_info(self.original_audio_path)
+                compressed_info = {
+                    'size': Path(save_path).stat().st_size,
+                    'duration': len(self.compressed_audio_segment) / 1000.0,
+                    'channels': self.compressed_audio_segment.channels,
+                    'sample_rate': self.compressed_audio_segment.frame_rate,
+                    'sample_width': self.compressed_audio_segment.sample_width
+                }
+                self.metrics_updated.emit(original_info, compressed_info, taux)
+                
+            except Exception as e:
+                print(f"Erreur de visualisation: {str(e)}")
             
         except Exception as e:
             self.compression_error.emit(str(e))
