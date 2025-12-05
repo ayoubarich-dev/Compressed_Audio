@@ -100,29 +100,14 @@ class AudioCompressorWindow(QMainWindow):
         title_label.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         title_label.setStyleSheet("color: #3498db;")
         
-        # Sous-titre
-        subtitle_label = QLabel("Compression intelligente")
-        subtitle_label.setFont(QFont("Segoe UI", 9, QFont.Weight.Light))
-        subtitle_label.setStyleSheet("color: #888888;")
-        
-        # Badge version
-        version_label = QLabel("v2.0")
-        version_label.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
-        version_label.setStyleSheet("""
-            background-color: #3498db;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 8px;
-        """)
         
         left_layout = QVBoxLayout()
         left_layout.setSpacing(2)
         left_layout.addWidget(title_label)
-        left_layout.addWidget(subtitle_label)
         
         header_layout.addLayout(left_layout)
         header_layout.addStretch()
-        header_layout.addWidget(version_label, alignment=Qt.AlignmentFlag.AlignTop)
+        
         
         return header_layout
     
@@ -169,7 +154,7 @@ class AudioCompressorWindow(QMainWindow):
         self.controller.file_selected.connect(self._on_file_selected)
         self.controller.compression_started.connect(self._on_compression_started)
         self.controller.compression_progress.connect(self._on_compression_progress)
-        self.controller.compression_finished.connect(self._on_compression_finished)
+
         self.controller.compression_error.connect(self._on_compression_error)
         self.controller.decompression_finished.connect(self._on_decompression_finished)
         
@@ -195,11 +180,7 @@ class AudioCompressorWindow(QMainWindow):
         """Callback: progression de la compression"""
         self.progress_bar.setValue(value)
     
-    def _on_compression_finished(self, rate: float):
-        """Callback: compression terminée"""
-        print(f"[DEBUG] Compression terminée: {rate}%")
-        self.progress_bar.setValue(100)
-        self.info_label.show_compression_rate(rate)
+   
     
     def _on_compression_error(self, message: str):
         """Callback: erreur de compression"""

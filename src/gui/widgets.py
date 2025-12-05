@@ -266,23 +266,6 @@ class CompressionInfoLabel(QLabel):
         """)
         self.show()
     
-    def show_success(self, message: str):
-        """Affiche un message de succès"""
-        # Limiter la longueur du message
-        if len(message) > 40:
-            message = message[:37] + "..."
-        self.setText(f"✅ {message}")
-        self.setStyleSheet(f"""
-            QLabel {{
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 {AppStyles.COLORS['success']}33, stop:1 {AppStyles.COLORS['success']}11);
-                border: 2px solid {AppStyles.COLORS['success']};
-                border-radius: 8px;
-                color: {AppStyles.COLORS['success']};
-                padding: 10px;
-            }}
-        """)
-        self.show()
     
     def clear_message(self):
         """Efface le message"""
