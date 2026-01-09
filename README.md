@@ -202,7 +202,3 @@ RLE:  [(5, 4), (7, 2)]
 python main.py
 ```
 
-
-⭐ **Star this repo if you find it helpful!** ⭐
-
-Made with ❤️ by [Your Name]
